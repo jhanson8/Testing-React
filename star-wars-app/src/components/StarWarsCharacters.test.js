@@ -3,19 +3,23 @@
 import React from "react";
 import { render, fireEvent, wait } from "@testing-library/react";
 import StarWarsCharacters from "./StarWarsCharacters.js";
+import { getData as mockGetData } from "../api";
 
-// await wait(() => expect(getAllByText(/asdfas/gi)));
+jest.mock("../api");
 
-// jest.mock("../api")
-
-test("Test Next and Previous buttons", async () => {
-  const { getByText, findByText } = render(<StarWarsCharacters />);
-  // Click button
-  fireEvent.click(getByText("Next"));
-  fireEvent.click(getByText("Previous"));
-});
-
-test("Test rendered list of characters", async () => {
-  const { getByText, findByText } = render(<StarWarsCharacters />);
-  //render a list of characters
+test("render api list", async () => {
+  const testData = {
+    count: 80,
+    next: "nextUrl",
+    previous: "previousUrl",
+    results: [{ name: "luke", url: "url" }]
+  };
+  mockGetData.mockResolvedValueOnce(testData);
+  const { getByText } = render(<StarWarsCharacters />);
+  const nextButton = getByText(/next/i);
+  fireEvent.click(nextButton);
+  await wait(() => {
+    expect(getByText(/luke/i)).toBeTruthy();
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+  });
 });
